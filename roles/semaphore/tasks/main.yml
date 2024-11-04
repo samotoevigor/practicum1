@@ -1,0 +1,64 @@
+---
+# tasks file for semaphore
+- name: Install semaphore
+  ansible.builtin.apt:
+    deb: "{{ semaphore_deb_url }}"
+    update_cache: true
+
+- name: Create config
+  ansible.builtin.copy:
+    dest: "{{ semaphore_config_path }}"
+    content: "{{ semaphore_config_json | to_json }}"
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    semaphore_config_json:
+      postgres:
+        host: "{{ semaphore_db_host }}:{{ semaphore_db_port }}"
+        user: "{{ semaphore_db_user }}"
+        pass: "{{ semaphore_db_password }}"
+        name: "{{ semaphore_db_name }}"
+        "options": {
+          "sslmode": "{{ semaphore_sslmode }}"
+        }
+      dialect: "{{ semaphore_dialect }}"
+      tmp_path: "{{ semaphore_temp_path }}"
+      cookie_hash: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
+      cookie_encryption: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
+      access_key_encryption: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
+
+- name: Show semaphore users
+  ansible.builtin.command:
+    cmd: "semaphore user list --config /root/config.json"
+  register: semaphore_user_list
+  changed_when: false
+
+- name: Create new admin password
+  ansible.builtin.command:
+    cmd: >-
+         semaphore user add
+         --admin
+         --login {{ semaphore_admin_login }}
+         --email {{ semaphore_admin_email }}
+         --name "{{ semaphore_admin_name }}"
+         --password "{{ semaphore_admin_password }}"
+         --config "{{ semaphore_config_path }}"
+  changed_when: true
+  when: 'semaphore_user_list.stdout is not contains(semaphore_admin_login)'
+
+
+- name: Create unit-file from template
+  ansible.builtin.template:
+    src: "semaphore.service.j2"
+    dest: /etc/systemd/system/semaphore.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Start service
+  ansible.builtin.service:
+    name: "semaphore"
+    state: started
+    enabled: true
+    daemon_reload: true

@@ -1,0 +1,16 @@
+[Unit]
+Description=Semaphore Ansible
+Documentation=https://github.com/semaphoreui/semaphore
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart={{ semaphore_bin_path }} server --config {{ semaphore_config_path }}
+SyslogIdentifier=semaphore
+Restart=always
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
