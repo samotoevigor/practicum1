@@ -2,6 +2,8 @@
 #semaphore_vars
 semaphore_db_user: "semaphore_user"
 semaphore_db_name: "semaphore_db"
+semaphore_processes_count: 2
+semaphore_base_port: 3000
 
 #postgrevars:
 postgresql_hba_entries:
@@ -18,3 +20,14 @@ postgresql_users:
   - name: "{{ semaphore_db_user }}"
     password: "{{ semaphore_db_password }}"
     db: "{{ semaphore_db_name }}"
+
+#haproxy
+haproxy_frontend_name: 'hafrontend'
+haproxy_frontend_bind_address: '*'
+haproxy_frontend_port: "{{ semaphore_base_port }}"
+haproxy_frontend_mode: 'http'
+haproxy_backend_httpchk: ""
+haproxy_backend_name: 'habackend'
+haproxy_backend_mode: 'http'
+haproxy_backend_balance_method: 'roundrobin'
+haproxy_backend_servers: []

@@ -10,12 +10,12 @@
   ansible.builtin.yum:
     name: "{{ semaphore_package_url }}.rpm"
     state: present
-    disable_gpg_check: yes
+    disable_gpg_check: true
   when: ansible_os_family == 'RedHat'
 
 - name: Create config
   ansible.builtin.copy:
-    dest: "{{ semaphore_config_path }}"
+    dest: "{{ semaphore_config_path }}config{{ item }}.json"
     content: "{{ semaphore_config_json | to_json }}"
     owner: root
     group: root
@@ -30,15 +30,17 @@
         "options": {
           "sslmode": "{{ semaphore_sslmode }}"
         }
+      port: "{{ (semaphore_base_port | int + item | int) | string }}"
       dialect: "{{ semaphore_dialect }}"
       tmp_path: "{{ semaphore_temp_path }}"
       cookie_hash: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
       cookie_encryption: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
       access_key_encryption: "{{ lookup('community.general.random_string', length=32, base64=True) }}"
+  loop: "{{ range(1, semaphore_processes_count + 1, 1) | list }}"
 
 - name: Show semaphore users
   ansible.builtin.command:
-    cmd: "semaphore user list --config /root/config.json"
+    cmd: "semaphore user list --config /root/config1.json"
   register: semaphore_user_list
   changed_when: false
 
@@ -51,7 +53,7 @@
          --email {{ semaphore_admin_email }}
          --name "{{ semaphore_admin_name }}"
          --password "{{ semaphore_admin_password }}"
-         --config "{{ semaphore_config_path }}"
+         --config "{{ semaphore_config_path }}config1.json"
   changed_when: true
   when: 'semaphore_user_list.stdout is not contains(semaphore_admin_login)'
 
@@ -59,14 +61,18 @@
 - name: Create unit-file from template
   ansible.builtin.template:
     src: "semaphore.service.j2"
-    dest: /etc/systemd/system/semaphore.service
+    dest: /etc/systemd/system/semaphore{{ item }}.service
     owner: root
     group: root
     mode: "0644"
+  vars:
+    number_of_app: "{{ item }}"
+  loop: "{{ range(1, semaphore_processes_count + 1, 1) | list }}"
 
 - name: Start service
   ansible.builtin.service:
-    name: "semaphore"
-    state: started
+    name: "semaphore{{ item }}"
+    state: restarted
     enabled: true
     daemon_reload: true
+  loop: "{{ range(1, semaphore_processes_count + 1, 1) | list }}"

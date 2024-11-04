@@ -1,6 +1,6 @@
 ---
 # defaults file for semaphore
-semaphore_config_path: "/root/config.json"
+semaphore_config_path: "/root/"
 semaphore_bin_path: "/usr/bin/semaphore"
 semaphore_ver: '2.10.35'
 semaphore_package_url: "https://github.com/semaphoreui/semaphore/releases/download/v{{ semaphore_ver }}/semaphore_{{ semaphore_ver }}_linux_amd64"
@@ -16,4 +16,5 @@ semaphore_admin_login: "admin"
 semaphore_admin_name: "admin"
 semaphore_admin_password: '' # required
 semaphore_admin_email: "admin@mail"
-   # cmd: 'semaphore user add --admin --login newAdmin --email new-admin@example.com --name "New Admin" --password "New$Password"
+semaphore_base_port: "3000"
+semaphore_processes_count: 1

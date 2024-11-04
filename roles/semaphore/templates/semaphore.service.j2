@@ -7,7 +7,7 @@ After=network-online.target
 [Service]
 Type=simple
 ExecReload=/bin/kill -HUP $MAINPID
-ExecStart={{ semaphore_bin_path }} server --config {{ semaphore_config_path }}
+ExecStart={{ semaphore_bin_path }} server --config {{ semaphore_config_path }}config{{ number_of_app }}.json
 SyslogIdentifier=semaphore
 Restart=always
 RestartSec=10s

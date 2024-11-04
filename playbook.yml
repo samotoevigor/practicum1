@@ -1,10 +1,23 @@
 - name: "Semaphore"
-  hosts: centos
+  hosts: ubuntu
   vars_files:
     - 'vars/main.yml'
     - 'vars/secret.yml'
+
+  pre_tasks:
+    - name: Generate haproxy backend server vars
+      ansible.builtin.set_fact:
+        haproxy_backend_servers: "{{ haproxy_backend_servers + [backend_host_json] }}"
+      vars:
+        backend_host_json:
+          name: "app{{ item }}"
+          address: "{{ hostvars[inventory_hostname].ansible_host }}:{{ (semaphore_base_port | int + item | int) | string }}"
+      loop: "{{ range(1, semaphore_processes_count + 1, 1) | list }}"
+
   roles:
     - role: geerlingguy.postgresql
       become: true
     - role: semaphore
+      become: true
+    - role: geerlingguy.haproxy
       become: true
