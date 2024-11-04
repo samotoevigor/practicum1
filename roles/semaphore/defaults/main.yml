@@ -2,7 +2,8 @@
 # defaults file for semaphore
 semaphore_config_path: "/root/config.json"
 semaphore_bin_path: "/usr/bin/semaphore"
-semaphore_deb_url: "https://github.com/semaphoreui/semaphore/releases/download/v2.10.35/semaphore_2.10.35_linux_amd64.deb"
+semaphore_ver: '2.10.35'
+semaphore_package_url: "https://github.com/semaphoreui/semaphore/releases/download/v{{ semaphore_ver }}/semaphore_{{ semaphore_ver }}_linux_amd64"
 semaphore_db_host: "127.0.0.1"
 semaphore_db_port: "5432"
 semaphore_db_user: "semaphore_user"
@@ -11,7 +12,6 @@ semaphore_sslmode: "disable"
 semaphore_dialect: "postgres"
 semaphore_temp_path: "/tmp/semaphore"
 semaphore_db_password: '' # required
-
 semaphore_admin_login: "admin"
 semaphore_admin_name: "admin"
 semaphore_admin_password: '' # required

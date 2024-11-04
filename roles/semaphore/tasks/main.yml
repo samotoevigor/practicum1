@@ -1,9 +1,17 @@
 ---
 # tasks file for semaphore
-- name: Install semaphore
+- name: Install semaphore on Ubuntu
   ansible.builtin.apt:
-    deb: "{{ semaphore_deb_url }}"
+    deb: "{{ semaphore_package_url }}.deb"
     update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Install semaphore on Centos
+  ansible.builtin.yum:
+    name: "{{ semaphore_package_url }}.rpm"
+    state: present
+    disable_gpg_check: yes
+  when: ansible_os_family == 'RedHat'
 
 - name: Create config
   ansible.builtin.copy:

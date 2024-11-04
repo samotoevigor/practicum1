@@ -1,5 +1,5 @@
 - name: "Semaphore"
-  hosts: all
+  hosts: centos
   vars_files:
     - 'vars/main.yml'
     - 'vars/secret.yml'
